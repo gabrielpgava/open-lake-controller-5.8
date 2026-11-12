@@ -49,6 +49,7 @@ pub fn render_bottom_bar(
         AppView::SoloMuteMatrix => "Solo / Mute Matrix: Mute or solo individual channels across frames",
         AppView::UserPreferences => "User Preferences: Display, network, and window configuration",
         AppView::NetworkConfig => "Network Configuration: Select active network interface (NIC), configure UDP 6004, and discover Lake processors",
+        AppView::ConnectedDevices => "Connected Devices: Manage physical & virtual Lake frames, audit network status and delete modules",
     };
 
     painter.text(
@@ -139,9 +140,9 @@ pub fn render_bottom_bar(
     let btn_w = ((available_w - (num_main_btns as f32 - 1.0) * btn_spacing) / num_main_btns as f32).clamp(55.0, 130.0);
 
     match *app_view {
-        AppView::HomeWorkarea => {
+        AppView::HomeWorkarea | AppView::ConnectedDevices => {
             let defs = [
-                ("Home", "F1", *menu_context == BottomMenuContext::Home),
+                ("Home", "F1", *menu_context == BottomMenuContext::Home && *app_view == AppView::HomeWorkarea),
                 ("System\nStore/Recall", "F2", *menu_context == BottomMenuContext::SystemStoreRecall),
                 ("Modules", "F3", *menu_context == BottomMenuContext::Modules),
                 ("Groups", "F4", *menu_context == BottomMenuContext::Groups),
@@ -149,7 +150,7 @@ pub fn render_bottom_bar(
                 ("Pages", "F6", *menu_context == BottomMenuContext::Pages),
                 ("User\nPreferences", "F7", *menu_context == BottomMenuContext::UserPreferences),
                 ("Icon\nControl", "F8", *menu_context == BottomMenuContext::IconControl),
-                ("Network", "F9", *menu_context == BottomMenuContext::Network),
+                ("Devices\n& Network", "F9", *app_view == AppView::ConnectedDevices || *menu_context == BottomMenuContext::Network),
                 ("Quit\nController", "F10", false),
             ];
 
@@ -201,7 +202,7 @@ pub fn render_bottom_bar(
                         }
                         8 => {
                             *menu_context = BottomMenuContext::Network;
-                            *app_view = AppView::NetworkConfig;
+                            *app_view = AppView::ConnectedDevices;
                         }
                         9 => {
                             // Quit Controller

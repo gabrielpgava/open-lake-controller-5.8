@@ -380,6 +380,15 @@ impl eframe::App for LakeControllerApp {
                         &mut self.app_view,
                     );
                 }
+                AppView::ConnectedDevices => {
+                    ui::panels::render_connected_devices(
+                        ui,
+                        &theme,
+                        &mut self.modules,
+                        &mut self.is_online,
+                        &mut self.app_view,
+                    );
+                }
             }
         });
     }

@@ -199,6 +199,8 @@ pub struct Module {
     pub sample_rate: SampleRate,
     pub group_id: Option<usize>,
     pub is_selected: bool,
+    pub is_virtual: bool,
+    pub is_online: bool,
 }
 
 impl Module {
@@ -251,6 +253,8 @@ impl Module {
             sample_rate: SampleRate::Rate96k,
             group_id: None,
             is_selected: false,
+            is_virtual: false,
+            is_online: true,
         }
     }
 }
@@ -291,6 +295,7 @@ pub enum AppView {
     SystemStoreRecall,
     UserPreferences,
     NetworkConfig,
+    ConnectedDevices,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

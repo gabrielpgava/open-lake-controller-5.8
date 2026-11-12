@@ -494,10 +494,156 @@ pub fn render_network_config(
                     ));
 
                     ui.add_space(8.0);
-                    if ui.button(RichText::new("🔍 Varrer Rede por Novos Processadores (Broadcast)").color(theme.frame_cyan)).clicked() {
-                        *is_online = true;
-                    }
+                    ui.horizontal(|ui| {
+                        if ui.button(RichText::new("🔍 Varrer Rede por Novos Processadores (Broadcast)").color(theme.frame_cyan)).clicked() {
+                            *is_online = true;
+                        }
+                        ui.add_space(15.0);
+                        if ui.button(RichText::new("📋 Ver Lista de Dispositivos Conectados").color(theme.frame_yellow).strong()).clicked() {
+                            *app_view = AppView::ConnectedDevices;
+                        }
+                    });
                 });
             });
+    });
+}
+
+pub fn render_connected_devices(
+    ui: &mut Ui,
+    theme: &LakeTheme,
+    modules: &mut Vec<Module>,
+    is_online: &mut bool,
+    app_view: &mut AppView,
+) {
+    ui.vertical(|ui| {
+        ui.horizontal(|ui| {
+            ui.label(
+                RichText::new("DISPOSITIVOS E PROCESSADORES LAKE CONECTADOS NA REDE")
+                    .font(egui::FontId::proportional(16.0))
+                    .strong()
+                    .color(theme.text_primary),
+            );
+
+            ui.add_space(20.0);
+            if ui.button("<< VOLTAR AO WORKSPACE").clicked() {
+                *app_view = AppView::HomeWorkarea;
+            }
+
+            ui.add_space(10.0);
+            if ui.button("🌐 CONFIGURAÇÃO DE REDE").clicked() {
+                *app_view = AppView::NetworkConfig;
+            }
+        });
+
+        ui.add_space(10.0);
+
+        egui::Frame::none()
+            .fill(theme.bg_card)
+            .rounding(Rounding::same(6.0))
+            .inner_margin(egui::Margin::symmetric(16.0, 10.0))
+            .show(ui, |ui| {
+                ui.horizontal(|ui| {
+                    let online_txt = if *is_online { "ONLINE - Hardware físico sincronizado via UDP 6004" } else { "OFFLINE - Apenas dispositivos virtuais e bancada" };
+                    let online_col = if *is_online { theme.meter_green } else { theme.meter_yellow };
+                    ui.label(RichText::new(online_txt).strong().color(online_col));
+
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        if ui.button(RichText::new("➕ Inserir Novo Frame Virtual").color(theme.lime_accent).strong()).clicked() {
+                            let new_id = modules.iter().map(|m| m.id).max().unwrap_or(0) + 1;
+                            let mut new_m = Module::new(
+                                new_id,
+                                "Mesa Virtual",
+                                "Virtual Rack",
+                                "192.168.1.150",
+                                crate::model::ModuleType::LM44,
+                                (100.0 + (new_id as f32 * 40.0) % 400.0, 100.0 + (new_id as f32 * 30.0) % 250.0),
+                            );
+                            new_m.is_virtual = true;
+                            new_m.is_online = false;
+                            modules.push(new_m);
+                        }
+                    });
+                });
+            });
+
+        ui.add_space(12.0);
+
+        // Header table
+        ui.horizontal(|ui| {
+            ui.label(RichText::new(format!("Total de Módulos no Sistema: {}", modules.len())).strong().color(theme.text_primary));
+            ui.add_space(20.0);
+            ui.label(RichText::new("(Aqui você pode gerenciar, auditar o status de rede ou apagar qualquer dispositivo do setup)").color(theme.text_muted));
+        });
+
+        ui.add_space(8.0);
+
+        let mut to_remove: Option<usize> = None;
+
+        egui::ScrollArea::vertical().show(ui, |ui| {
+            for (idx, module) in modules.iter_mut().enumerate() {
+                egui::Frame::none()
+                    .fill(if module.is_virtual { Color32::from_rgb(18, 22, 32) } else { theme.bg_card })
+                    .stroke(Stroke::new(1.0_f32, if module.is_selected { theme.frame_yellow } else { Color32::from_rgb(35, 45, 60) }))
+                    .rounding(Rounding::same(6.0))
+                    .inner_margin(egui::Margin::symmetric(16.0, 10.0))
+                    .show(ui, |ui| {
+                        ui.horizontal(|ui| {
+                            // Badge status
+                            let (badge_txt, badge_col) = if module.is_virtual {
+                                ("VIRTUAL / OFFLINE", Color32::from_rgb(140, 160, 240))
+                            } else if *is_online && module.is_online {
+                                ("CONECTADO / ONLINE", theme.meter_green)
+                            } else {
+                                ("DESCONECTADO", theme.meter_yellow)
+                            };
+
+                            ui.label(RichText::new(format!("[{}]", badge_txt)).font(egui::FontId::monospace(10.5)).color(badge_col));
+                            ui.add_space(10.0);
+
+                            ui.vertical(|ui| {
+                                ui.horizontal(|ui| {
+                                    ui.label(RichText::new(&module.name).strong().color(theme.text_primary));
+                                    ui.label(format!("(Módulo {}, {})", module.module_letter, module.module_type.display_name()));
+                                    ui.label(RichText::new(format!("Frame: {}", module.frame_name)).color(theme.lime_accent));
+                                });
+                                ui.label(
+                                    RichText::new(format!("IP: {}   |   Preset: {}   |   Entradas: {}   |   Saídas: {}",
+                                        module.ip_address, module.preset_name, module.inputs.len(), module.outputs.len()
+                                    ))
+                                    .font(egui::FontId::monospace(11.0))
+                                    .color(theme.text_muted),
+                                );
+                            });
+
+                            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                                if ui.button(RichText::new("🗑 APAGAR").color(theme.red_clip).strong()).clicked() {
+                                    to_remove = Some(idx);
+                                }
+
+                                ui.add_space(10.0);
+
+                                if ui.button("Abrir EQ / Filtros").clicked() {
+                                    module.is_selected = true;
+                                    *app_view = AppView::ModuleEditor;
+                                }
+
+                                ui.add_space(10.0);
+
+                                if module.is_virtual {
+                                    if ui.button("Parear com Físico").clicked() {
+                                        module.is_virtual = false;
+                                        module.is_online = true;
+                                    }
+                                }
+                            });
+                        });
+                    });
+                ui.add_space(6.0);
+            }
+        });
+
+        if let Some(rm_idx) = to_remove {
+            modules.remove(rm_idx);
+        }
     });
 }

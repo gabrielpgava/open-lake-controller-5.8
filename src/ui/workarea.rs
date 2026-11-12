@@ -6,7 +6,7 @@ use eframe::egui::{self, Color32, Pos2, Rect, Rounding, Sense, Stroke, Ui, Vec2}
 pub fn render_workarea(
     ui: &mut Ui,
     theme: &LakeTheme,
-    modules: &mut [Module],
+    modules: &mut Vec<Module>,
     _groups: &[Group],
     selected_module_id: &mut Option<usize>,
     app_view: &mut AppView,
@@ -223,6 +223,8 @@ pub fn render_workarea(
     }
 
     // 4. If "Modules" (F3) is active, draw the authentic module shelf at the bottom
+    let mut add_module_request: Option<(ModuleType, &'static str, &'static str, f32)> = None;
+
     if *menu_context == BottomMenuContext::Modules {
         let shelf_rect = Rect::from_min_max(
             Pos2::new(bounds.min.x + 10.0, bounds.max.y - shelf_h),
@@ -232,20 +234,20 @@ pub fn render_workarea(
         painter.rect_filled(shelf_rect, Rounding::same(6.0), Color32::from_rgb(8, 12, 16));
         painter.rect_stroke(shelf_rect, Rounding::same(6.0), Stroke::new(1.2_f32, theme.frame_yellow));
 
-        let shelf_items = [
-            ("LM 44", "Contour\nModules", theme.disc_mesa_blue),
-            ("Virtual LM 44", "4x Mesa EQ\nModules", theme.disc_mesa_blue),
-            ("Virtual PLM 10000Q", "2x Contour\nModules", theme.disc_plm_amber),
-            ("Virtual PLM 14000", "2x Contour\nModules", theme.disc_plm_amber),
-            ("Virtual PLM 20000Q", "2x Contour\nModules", theme.disc_plm_amber),
-            ("LM 26", "2x Contour\nModules", theme.disc_contour_coral),
+        let shelf_items: [(ModuleType, &'static str, &'static str, Color32); 6] = [
+            (ModuleType::LM44, "Virtual LM 44", "4x Mesa EQ\nModules", theme.disc_mesa_blue),
+            (ModuleType::LM26, "Virtual LM 26", "2x Contour\nModules", theme.disc_contour_coral),
+            (ModuleType::Contour, "Virtual Contour", "Classic Loudspeaker\nProcessor", theme.disc_contour_coral),
+            (ModuleType::PLM20000Q, "Virtual PLM 20000Q", "4-Ch Touring\nAmplifier", theme.disc_plm_amber),
+            (ModuleType::PLM10000Q, "Virtual PLM 10000Q", "4-Ch Powered\nProcessor", theme.disc_plm_amber),
+            (ModuleType::MesaEq, "Virtual Mesa EQ", "Independent EQ\nEngine", theme.disc_mesa_blue),
         ];
 
-        let slot_w = 115.0;
+        let slot_w = 122.0;
         let slot_h = 74.0;
         let slot_y = shelf_rect.min.y + 8.0;
 
-        for (i, (title, sub, color)) in shelf_items.iter().enumerate() {
+        for (i, (m_type, title, sub, color)) in shelf_items.iter().enumerate() {
             let slot_x = shelf_rect.min.x + 12.0 + (i as f32) * (slot_w + 10.0);
             if slot_x + slot_w > shelf_rect.max.x {
                 break;
@@ -253,14 +255,16 @@ pub fn render_workarea(
             let s_rect = Rect::from_min_size(Pos2::new(slot_x, slot_y), Vec2::new(slot_w, slot_h));
             let s_resp = ui.interact(s_rect, ui.make_persistent_id(format!("shelf_mod_{}", i)), Sense::click());
 
-            painter.rect_filled(s_rect, Rounding::same(4.0), Color32::from_rgb(18, 24, 32));
-            painter.rect_stroke(s_rect, Rounding::same(4.0), Stroke::new(1.0_f32, theme.frame_cyan));
+            let is_s_hovered = s_resp.hovered();
+            let s_bg = if is_s_hovered { Color32::from_rgb(28, 38, 52) } else { Color32::from_rgb(18, 24, 32) };
+            painter.rect_filled(s_rect, Rounding::same(4.0), s_bg);
+            painter.rect_stroke(s_rect, Rounding::same(4.0), Stroke::new(1.0_f32, if is_s_hovered { theme.frame_yellow } else { theme.frame_cyan }));
 
             // Thumbnail mini sphere
             draw_lake_sphere_disc(
                 &painter,
-                Pos2::new(s_rect.min.x + 22.0, s_rect.center().y),
-                16.0,
+                Pos2::new(s_rect.min.x + 20.0, s_rect.center().y),
+                15.0,
                 'A',
                 "",
                 "",
@@ -269,7 +273,7 @@ pub fn render_workarea(
 
             // Title & sub-text
             painter.text(
-                Pos2::new(s_rect.min.x + 44.0, s_rect.min.y + 16.0),
+                Pos2::new(s_rect.min.x + 40.0, s_rect.min.y + 16.0),
                 egui::Align2::LEFT_CENTER,
                 *title,
                 egui::FontId::proportional(11.0),
@@ -279,7 +283,7 @@ pub fn render_workarea(
             let sub_lines: Vec<&str> = sub.split('\n').collect();
             for (li, line) in sub_lines.iter().enumerate() {
                 painter.text(
-                    Pos2::new(s_rect.min.x + 44.0, s_rect.min.y + 36.0 + (li as f32) * 12.0),
+                    Pos2::new(s_rect.min.x + 40.0, s_rect.min.y + 36.0 + (li as f32) * 12.0),
                     egui::Align2::LEFT_CENTER,
                     *line,
                     egui::FontId::monospace(8.5),
@@ -288,18 +292,24 @@ pub fn render_workarea(
             }
 
             if s_resp.clicked() {
-                // Add virtual module
-                let new_id = modules.len() + 1;
-                let _new_m = Module::new(
-                    new_id,
-                    format!("New {}", title).as_str(),
-                    "Rack-New",
-                    "192.168.1.120",
-                    ModuleType::LM44,
-                    (slot_x - bounds.min.x, 60.0),
-                );
-                // Note: modules is mutable slice, adding would need vector if supported
+                add_module_request = Some((*m_type, title, "Virtual Rack", slot_x - bounds.min.x));
             }
         }
+    }
+
+    if let Some((m_type, title, frame, start_x)) = add_module_request {
+        let new_id = modules.iter().map(|m| m.id).max().unwrap_or(0) + 1;
+        let mut new_m = Module::new(
+            new_id,
+            title,
+            frame,
+            "192.168.1.150",
+            m_type,
+            (start_x.max(30.0).min(work_bounds.width() - 160.0), 70.0),
+        );
+        new_m.is_virtual = true;
+        new_m.is_online = false;
+        *selected_module_id = Some(new_id);
+        modules.push(new_m);
     }
 }
