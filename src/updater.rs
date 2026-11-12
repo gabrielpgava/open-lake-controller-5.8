@@ -123,17 +123,78 @@ impl AutoUpdater {
         let status_arc = Arc::clone(&self.status);
         {
             let mut s = status_arc.lock().unwrap();
-            *s = UpdateStatus::Downloading(0.2);
+            *s = UpdateStatus::Downloading(0.1);
         }
 
         thread::spawn(move || {
-            // Open the download URL in the system default browser or download asset
-            if let Err(e) = open_browser(&url) {
+            let temp_dir = std::env::temp_dir();
+            let dest_file = temp_dir.join("open-dolbylake-update.zip");
+
+            // Direct file download using curl.exe
+            {
                 let mut s = status_arc.lock().unwrap();
-                *s = UpdateStatus::Error(format!("Failed to open download url: {}", e));
-            } else {
-                let mut s = status_arc.lock().unwrap();
-                *s = UpdateStatus::Downloaded(format!("Opened browser to download: {}", url));
+                *s = UpdateStatus::Downloading(0.4);
+            }
+
+            let download_res = std::process::Command::new("curl.exe")
+                .args(["-L", "-s", "-o", dest_file.to_str().unwrap(), &url])
+                .output();
+
+            match download_res {
+                Ok(out) if out.status.success() && dest_file.exists() => {
+                    {
+                        let mut s = status_arc.lock().unwrap();
+                        *s = UpdateStatus::Downloading(0.85);
+                    }
+
+                    // Extract the downloaded update in temp folder and run installer or replacement
+                    let extract_dir = temp_dir.join("open-dolbylake-extracted");
+                    let _ = std::fs::remove_dir_all(&extract_dir);
+                    let _ = std::fs::create_dir_all(&extract_dir);
+
+                    let unzip_res = std::process::Command::new("powershell")
+                        .args([
+                            "-Command",
+                            &format!(
+                                "Expand-Archive -Path '{}' -DestinationPath '{}' -Force",
+                                dest_file.display(),
+                                extract_dir.display()
+                            ),
+                        ])
+                        .output();
+
+                    if unzip_res.is_ok() {
+                        let mut s = status_arc.lock().unwrap();
+                        *s = UpdateStatus::Downloaded(format!(
+                            "Atualização baixada com sucesso em: {:?}. Abra a pasta para instalar ou executar.",
+                            extract_dir
+                        ));
+
+                        // Open explorer in the update folder
+                        #[cfg(target_os = "windows")]
+                        {
+                            let _ = std::process::Command::new("explorer")
+                                .arg(&extract_dir)
+                                .spawn();
+                        }
+                    } else {
+                        let mut s = status_arc.lock().unwrap();
+                        *s = UpdateStatus::Downloaded(format!(
+                            "Arquivo de atualização salvo em: {:?}",
+                            dest_file
+                        ));
+                    }
+                }
+                _ => {
+                    // Fallback to browser if direct curl download fails
+                    if let Err(e) = open_browser(&url) {
+                        let mut s = status_arc.lock().unwrap();
+                        *s = UpdateStatus::Error(format!("Erro ao baixar atualização: {}", e));
+                    } else {
+                        let mut s = status_arc.lock().unwrap();
+                        *s = UpdateStatus::Downloaded(format!("Navegador aberto para download: {}", url));
+                    }
+                }
             }
         });
     }
