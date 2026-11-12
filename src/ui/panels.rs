@@ -91,7 +91,7 @@ pub fn render_store_recall(
     ui.vertical(|ui| {
         ui.horizontal(|ui| {
             ui.label(
-                RichText::new("SYSTEM STORE / RECALL PRESETS")
+                RichText::new("SYSTEM STORE / RECALL PRESETS & LOUDSPEAKER LOADLIBRARY")
                     .font(egui::FontId::proportional(16.0))
                     .strong()
                     .color(theme.text_primary),
@@ -103,33 +103,82 @@ pub fn render_store_recall(
             }
         });
 
-        ui.add_space(14.0);
+        ui.add_space(10.0);
+
+        // Explanatory Banner about Lake LoadLibrary & Famous Loudspeakers
+        egui::Frame::none()
+            .fill(theme.bg_card)
+            .rounding(Rounding::same(6.0))
+            .inner_margin(egui::Margin::symmetric(14.0, 10.0))
+            .show(ui, |ui| {
+                ui.horizontal(|ui| {
+                    ui.label(
+                        RichText::new("🔊 BIBLIOTECA DE CAIXAS DE SOM FAMOSAS (LAKE LOADLIBRARY 2.7+)")
+                            .font(egui::FontId::proportional(12.5))
+                            .strong()
+                            .color(theme.frame_yellow),
+                    );
+                });
+                ui.label(
+                    RichText::new(
+                        "Sim! O software original possui a suíte oficial Lake LoadLibrary com arquivos de presets (.gpa, .lpa, .tpa, .csm) \
+                        homologados para marcas consagradas como ADAMSON (Linhas Y10, Y18, SpekTrix, Metrix, Série M), TURBOSOUND (Linha Flex, Aspect, TFM), \
+                        além de suportar módulos universais Contour/Mesa para L-Acoustics, JBL Pro, d&b audiotechnik e Clair Global. \
+                        Abaixo você pode carregar diretamente os presets de fábrica de cada sistema nas caixas e módulos."
+                    )
+                    .font(egui::FontId::proportional(11.0))
+                    .color(theme.text_muted),
+                );
+            });
+
+        ui.add_space(12.0);
 
         let system_presets = [
-            ("2x Contour 4x MEQ Modules", "2x Contour Loudspeaker Processors with 4x Mesa EQ Modules"),
-            ("2x LM26 Modules", "2x Lake LM26 Main PA and Delay System"),
-            ("2x LM44 MESA Modules", "2x Lake LM44 Multi-Engine Audio System"),
-            ("2x PLM 10000Q Modules", "2x Lab.gruppen PLM 10000Q 4-channel Powered Loudspeaker Processors"),
-            ("2x PLM 20000Q Modules", "2x Lab.gruppen PLM 20000Q Touring Sub/Main High Power Arrays"),
-            ("Contour Classic Crossovers CL3way", "Contour 3-Way Classic Crossover Setup with LimiterMax"),
-            ("Contour Linear Phase Crossovers LP4way", "Contour 4-Way Linear Phase Crossover Setup"),
+            ("Adamson Y10 Line Array (4-Way Tri-amp)", "ADAMSON Y10 + T21 Subwoofer Crossover & LimiterMax Profile", "Adamson"),
+            ("Adamson SpekTrix / Metrix Line Array", "ADAMSON Metrix Stereo + MSUB Cardioid Alignment", "Adamson"),
+            ("Adamson M12 / M15 Stage Wedge Monitors", "ADAMSON M15 Active/Passive Bright & Flat Monitor Curves", "Adamson"),
+            ("Turbosound Flex Array TFA-600", "Turbosound Flex FIR RevA Line Array Presets with TSW218 Sub", "Turbosound"),
+            ("Turbosound Aspect & Flashlight Touring", "Turbosound Aspect Modular Touring PA System Curves", "Turbosound"),
+            ("JBL VTX / VerTec Line Array Contour", "JBL Pro Touring Crossover (LP24 LinPhase, 80Hz Xo, LimiterMax)", "JBL"),
+            ("L-Acoustics K-Standard Universal MEQ", "L-Acoustics Contour Alignment & 4-Band Contour Matrix", "L-Acoustics"),
+            ("d&b audiotechnik J-Series Universal Contour", "d&b audiotechnik Touring System Contour + Mesa EQ Profile", "d&b"),
+            ("Contour Classic Crossovers CL3way", "Contour 3-Way Classic Crossover Setup with LimiterMax", "Lake Factory"),
+            ("Contour Linear Phase Crossovers LP4way", "Contour 4-Way Linear Phase Crossover Setup (Zero Phase Distortion)", "Lake Factory"),
+            ("2x Contour 4x MEQ Modules", "2x Contour Loudspeaker Processors with 4x Mesa EQ Modules", "Lake Factory"),
+            ("2x LM26 Modules", "2x Lake LM26 Main PA and Delay System", "Lake Factory"),
+            ("2x LM44 MESA Modules", "2x Lake LM44 Multi-Engine Audio System", "Lake Factory"),
+            ("2x PLM 10000Q Modules", "2x Lab.gruppen PLM 10000Q 4-channel Powered Loudspeaker Processors", "Lab.gruppen"),
+            ("2x PLM 20000Q Modules", "2x Lab.gruppen PLM 20000Q Touring Sub/Main High Power Arrays", "Lab.gruppen"),
         ];
 
         egui::ScrollArea::vertical().show(ui, |ui| {
-            for (title, desc) in system_presets {
+            for (title, desc, brand) in system_presets {
                 egui::Frame::none()
                     .fill(theme.bg_card)
                     .rounding(Rounding::same(6.0))
-                    .inner_margin(egui::Margin::symmetric(16.0, 12.0))
+                    .inner_margin(egui::Margin::symmetric(16.0, 10.0))
                     .show(ui, |ui| {
                         ui.horizontal(|ui| {
                             ui.vertical(|ui| {
-                                ui.label(
-                                    RichText::new(title)
-                                        .font(egui::FontId::proportional(14.0))
-                                        .strong()
-                                        .color(theme.lime_accent),
-                                );
+                                ui.horizontal(|ui| {
+                                    let badge_color = match brand {
+                                        "Adamson" => Color32::from_rgb(245, 168, 28),
+                                        "Turbosound" => Color32::from_rgb(60, 185, 240),
+                                        "JBL" | "L-Acoustics" | "d&b" => Color32::from_rgb(255, 100, 100),
+                                        _ => theme.lime_accent,
+                                    };
+                                    ui.label(
+                                        RichText::new(format!("[{}]", brand))
+                                            .font(egui::FontId::monospace(10.5))
+                                            .color(badge_color),
+                                    );
+                                    ui.label(
+                                        RichText::new(title)
+                                            .font(egui::FontId::proportional(13.5))
+                                            .strong()
+                                            .color(theme.text_primary),
+                                    );
+                                });
                                 ui.label(
                                     RichText::new(desc)
                                         .font(egui::FontId::proportional(11.0))
@@ -138,9 +187,10 @@ pub fn render_store_recall(
                             });
 
                             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                if ui.button(RichText::new("RECALL PRESET").color(theme.cyan_accent)).clicked() {
-                                    // Soft preset recall feedback
+                                if ui.button(RichText::new("CARREGAR PRESET").color(theme.frame_yellow).strong()).clicked() {
+                                    // Preset recall feedback
                                     for m in modules.iter_mut() {
+                                        m.preset_name = title.to_string();
                                         for out in &mut m.outputs {
                                             out.muted = false;
                                         }
@@ -149,7 +199,7 @@ pub fn render_store_recall(
                             });
                         });
                     });
-                ui.add_space(8.0);
+                ui.add_space(6.0);
             }
         });
     });
