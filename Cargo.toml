@@ -1,8 +1,8 @@
 [package]
-name = "lake-controller"
-version = "5.8.0"
+name = "open-dolbylake-software"
+version = "0.0.1"
 edition = "2021"
-description = "Lake Controller v5.8 - Modern Windowed Audio Processor & Amplifier Controller"
+description = "Open DolbyLake Software v0.0.1 - Modern Windowed Audio Processor & Amplifier Controller"
 
 [dependencies]
 eframe = "0.29"

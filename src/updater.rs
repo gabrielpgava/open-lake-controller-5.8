@@ -2,7 +2,7 @@ use serde::Deserialize;
 use std::sync::{Arc, Mutex};
 use std::thread;
 
-pub const CURRENT_VERSION: &str = "5.8.0";
+pub const CURRENT_VERSION: &str = "0.0.1";
 pub const GITHUB_REPO: &str = "gabrielpgava/open-lake-controller-5.8";
 
 #[derive(Debug, Clone, PartialEq)]

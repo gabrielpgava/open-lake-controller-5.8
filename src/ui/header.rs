@@ -94,19 +94,30 @@ pub fn render_header(
     }
 
     // Top-Right:
-    // 1. Lake Logo Badge (Iconic blue square with white "lake")
-    let badge_size = 28.0;
+    // 0. Beta / Real hardware notice
+    let notice_text = "⚠ v0.0.1 (Não testado em equipamento real)";
+    painter.text(
+        Pos2::new(bounds.center().x + 60.0, bounds.center().y),
+        egui::Align2::CENTER_CENTER,
+        notice_text,
+        egui::FontId::proportional(11.0),
+        Color32::from_rgb(255, 180, 50),
+    );
+
+    // 1. Lake Logo Badge (Iconic blue square with white "dolby lake")
+    let badge_size_w = 75.0;
+    let badge_size_h = 24.0;
     let badge_rect = Rect::from_min_size(
-        Pos2::new(bounds.max.x - badge_size - 14.0, bounds.min.y + (header_height - badge_size) * 0.5),
-        Vec2::splat(badge_size),
+        Pos2::new(bounds.max.x - badge_size_w - 14.0, bounds.min.y + (header_height - badge_size_h) * 0.5),
+        Vec2::new(badge_size_w, badge_size_h),
     );
     painter.rect_filled(badge_rect, Rounding::same(4.0), theme.lake_blue);
     painter.rect_stroke(badge_rect, Rounding::same(4.0), Stroke::new(1.0_f32, Color32::from_rgb(80, 160, 240)));
     painter.text(
         badge_rect.center(),
         egui::Align2::CENTER_CENTER,
-        "lake",
-        egui::FontId::proportional(13.0),
+        "dolby lake",
+        egui::FontId::proportional(11.5),
         Color32::WHITE,
     );
 

@@ -1663,17 +1663,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2db585e1d738fc771bf08a151420d3ed193d9d895a36df7f6f8a9456b911ddc"
 
 [[package]]
-name = "lake-controller"
-version = "5.8.0"
-dependencies = [
- "eframe",
- "egui",
- "image",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "libc"
 version = "0.2.191"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2213,6 +2202,17 @@ name = "once_cell"
 version = "1.21.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50"
+
+[[package]]
+name = "open-dolbylake-software"
+version = "0.0.1"
+dependencies = [
+ "eframe",
+ "egui",
+ "image",
+ "serde",
+ "serde_json",
+]
 
 [[package]]
 name = "orbclient"

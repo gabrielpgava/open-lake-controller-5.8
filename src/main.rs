@@ -426,7 +426,7 @@ fn main() {
     }
 
     let mut viewport = egui::ViewportBuilder::default()
-        .with_title("Lake Controller v5.8 - Modern Windowed Audio Processor")
+        .with_title("Open DolbyLake Software v0.0.1 (Experimental - Not Tested on Real Hardware)")
         .with_inner_size([1360.0, 840.0])
         .with_min_inner_size([1024.0, 680.0])
         .with_resizable(true);
@@ -444,9 +444,9 @@ fn main() {
         ..Default::default()
     };
 
-    println!("Starting Lake Controller v5.8 Modern Windowed Edition...");
+    println!("Starting Open DolbyLake Software v0.0.1 Modern Windowed Edition...");
     let _ = eframe::run_native(
-        "Lake Controller v5.8",
+        "Open DolbyLake Software v0.0.1",
         native_options,
         Box::new(move |_cc| {
             Ok(Box::new(LakeControllerApp::new(
