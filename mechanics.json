@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "values": [
+    {
+      "name": "speed of sound",
+      "group": "delay",
+      "value": 343.6,
+      "unit": "m/s",
+      "source": "iomath.dll function 0x100010c0"
+    },
+    {
+      "name": "max delay",
+      "group": "delay",
+      "value": 2000.0,
+      "unit": "ms",
+      "source": "Contour.dll function 0x1002e4e0"
+    },
+    {
+      "name": "limiter auto release",
+      "group": "dynamics",
+      "value": 160.0,
+      "unit": "ms",
+      "source": "Contour.dll function 0x103de260"
+    },
+    {
+      "name": "limiter max peak threshold",
+      "group": "dynamics",
+      "value": 25.0,
+      "unit": "dBu",
+      "source": "Contour.dll 0x104607bc"
+    },
+    {
+      "name": "peq min frequency",
+      "group": "equalizer",
+      "value": 10.0,
+      "unit": "Hz",
+      "source": "iomath.dll function 0x10001920"
+    },
+    {
+      "name": "peq max frequency",
+      "group": "equalizer",
+      "value": 20000.0,
+      "unit": "Hz",
+      "source": "iomath.dll function 0x10001920"
+    },
+    {
+      "name": "peq min gain",
+      "group": "equalizer",
+      "value": -15.0,
+      "unit": "dB",
+      "source": "iomath.dll function 0x100010c0"
+    },
+    {
+      "name": "peq max gain",
+      "group": "equalizer",
+      "value": 15.0,
+      "unit": "dB",
+      "source": "iomath.dll function 0x100010c0"
+    },
+    {
+      "name": "peq min bandwidth",
+      "group": "equalizer",
+      "value": 0.1,
+      "unit": "octaves",
+      "source": "iomath.dll function 0x100010c0"
+    },
+    {
+      "name": "peq max bandwidth",
+      "group": "equalizer",
+      "value": 10.0,
+      "unit": "octaves",
+      "source": "iomath.dll function 0x100010c0"
+    },
+    {
+      "name": "default udp port",
+      "group": "network",
+      "value": 6004,
+      "unit": "port",
+      "source": "Lake Controller.exe function 0x4056b0"
+    },
+    {
+      "name": "startup mutex",
+      "group": "system",
+      "value": "Lake_Contour_CC_Startup_Mutex",
+      "source": "Lake Controller.exe function 0x4056b0"
+    },
+    {
+      "name": "geq band count",
+      "group": "equalizer",
+      "value": 28,
+      "unit": "bands",
+      "source": "Contour.dll WorksheetGEQ function 0x1027d770"
+    },
+    {
+      "name": "window mode default",
+      "group": "graphics",
+      "value": "windowed",
+      "source": "Contour.dll FUN_1002e4e0 flag windowed"
+    }
+  ]
+}

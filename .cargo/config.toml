@@ -1,0 +1,9 @@
+[target.x86_64-pc-windows-gnu]
+linker = "C:\\Users\\gabri\\Documents\\Craft Anything\\lake-controller\\app\\linker.exe"
+ar = "C:\\Users\\gabri\\AppData\\Local\\Microsoft\\WinGet\\Packages\\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\\mingw64\\bin\\ar.exe"
+rustflags = [
+    "-C", "link-arg=-BC:\\Users\\gabri\\AppData\\Local\\Microsoft\\WinGet\\Packages\\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\\mingw64\\bin\\"
+]
+
+
+
