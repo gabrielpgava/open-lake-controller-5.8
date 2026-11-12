@@ -1,5 +1,5 @@
 [package]
-name = "open-dolbylake-software"
+name = "lake-controller"
 version = "0.0.1"
 edition = "2021"
 description = "Open DolbyLake Software v0.0.1 - Modern Windowed Audio Processor & Amplifier Controller"

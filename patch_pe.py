@@ -102,8 +102,8 @@ def patch_file(exe_path):
 def patch_all():
     base_dir = os.path.dirname(os.path.abspath(__file__))
     patterns = [
-        os.path.join(base_dir, "target", "*", "lake-controller.exe"),
-        os.path.join(base_dir, "target", "*", "deps", "lake_controller-*.exe"),
+        os.path.join(base_dir, "target", "*", "*.exe"),
+        os.path.join(base_dir, "target", "*", "deps", "*.exe"),
     ]
     for pat in patterns:
         for f in glob.glob(pat):
