@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open Lake Controller v5.8 | Modern Windowed Edition for Dolby Lake</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0c10;
+      --card-bg: #141822;
+      --lake-yellow: #f8c018;
+      --lake-blue: #0076a8;
+      --lake-cyan: #00b4d8;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --border: #232b3e;
+      --meter-green: #2ecc71;
+      --meter-amber: #f39c12;
+      --meter-red: #e74c3c;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    header {
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      background: radial-gradient(circle at top, #1a2235 0%, var(--bg) 70%);
+      border-bottom: 2px solid var(--lake-yellow);
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      background: rgba(248, 192, 24, 0.15);
+      color: var(--lake-yellow);
+      border: 1px solid var(--lake-yellow);
+      margin-bottom: 1rem;
+    }
+    h1 {
+      font-size: 2.75rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.75rem;
+    }
+    h1 span {
+      color: var(--lake-yellow);
+    }
+    p.lead {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 780px;
+      margin: 0 auto 1.5rem auto;
+    }
+    .cta-group {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+    .btn {
+      padding: 0.85rem 1.75rem;
+      border-radius: 8px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .btn-primary {
+      background: var(--lake-yellow);
+      color: #000;
+      box-shadow: 0 4px 14px rgba(248, 192, 24, 0.35);
+    }
+    .btn-primary:hover {
+      background: #ffd043;
+      transform: translateY(-2px);
+    }
+    .btn-secondary {
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      border-color: var(--lake-yellow);
+      transform: translateY(-2px);
+    }
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.75rem;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: var(--lake-yellow);
+    }
+    .card h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0.75rem;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+    .sphere-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #5dade2, #1b4f72);
+      box-shadow: 0 0 8px rgba(93, 173, 226, 0.6);
+      display: inline-block;
+    }
+    .showcase-box {
+      margin-top: 3.5rem;
+      background: #000;
+      border: 2px solid var(--lake-yellow);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    }
+    .showcase-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #222;
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .lake-logo {
+      font-weight: 800;
+      font-size: 1.5rem;
+      color: var(--lake-yellow);
+      letter-spacing: 0.05em;
+    }
+    .module-list {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .module-item {
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .meters {
+      display: flex;
+      gap: 4px;
+    }
+    .meter-bar {
+      width: 6px;
+      height: 36px;
+      background: #222;
+      border-radius: 2px;
+      position: relative;
+      overflow: hidden;
+    }
+    .meter-fill {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, var(--meter-green) 60%, var(--meter-amber) 85%, var(--meter-red) 100%);
+    }
+    pre {
+      background: #0d1117;
+      padding: 1rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      border: 1px solid #30363d;
+      margin-top: 1rem;
+    }
+    footer {
+      text-align: center;
+      padding: 3rem 1.5rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="badge">Preservation Project</div>
+    <h1>Open Lake Controller <span>v5.8</span></h1>
+    <p class="lead">A modern, cross-platform windowed reconstruction engineered to keep legendary <strong>Dolby Lake Processors</strong>, LM Series, and PLM amplifiers alive on modern operating systems.</p>
+    
+    <div class="cta-group">
+      <a href="https://github.com/gabrielpgava/open-lake-controller-5.8/releases" class="btn btn-primary">
+        ⬇️ Download Latest Release
+      </a>
+      <a href="https://github.com/gabrielpgava/open-lake-controller-5.8" class="btn btn-secondary">
+        ⭐ View on GitHub
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <div class="grid">
+        <div class="card">
+          <h3><span class="sphere-icon"></span> Dolby Lake Hardware Support</h3>
+          <p>Created specifically for touring audio engineers and venues operating Dolby Lake Processors (DLP), Lake Mesa Quad EQ, LM 26, LM 44, and Lab.gruppen PLM Series amplifiers without relying on obsolete Windows 7 machines.</p>
+        </div>
+
+        <div class="card">
+          <h3>🪟 Native Modern Windowed Mode</h3>
+          <p>Replaces the legacy, crash-prone DirectDraw exclusive fullscreen engine. Minimizing, maximizing, and resizing are smooth and instant on Windows 10/11, macOS, and Linux without display lockups or white screens.</p>
+        </div>
+
+        <div class="card">
+          <h3>🌐 UDP 6004 & Network Interface Selection</h3>
+          <p>Built-in network adapter selector allows direct binding to Dante subnets or dedicated processor control networks. Eliminates ghost audio meter movement when offline.</p>
+        </div>
+
+        <div class="card">
+          <h3>⚡ Decompiled Parameter Accuracy</h3>
+          <p>Parametric EQ curves, 28-band Graphic EQ (GEQ), LimiterMax thresholds, and crossover slopes conform 100% to real constants decompiled from original Lake DSP libraries.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="showcase-box">
+      <div class="showcase-header">
+        <div class="lake-logo">LAKE CONTROLLER // RECONSTRUCTED</div>
+        <div style="font-size: 0.85rem; color: #4ade80;">● ONLINE / WINDOWED MODE READY</div>
+      </div>
+      
+      <div class="module-list">
+        <div class="module-item">
+          <div class="sphere-icon" style="background: radial-gradient(circle at 30% 30%, #5dade2, #1b4f72);"></div>
+          <div>
+            <div style="font-weight: 700; color: #fff;">Dolby Lake Processor</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">DLP - 4 In / 12 Out Mesa</div>
+          </div>
+          <div class="meters">
+            <div class="meter-bar"><div class="meter-fill" style="height: 0%;"></div></div>
+            <div class="meter-bar"><div class="meter-fill" style="height: 0%;"></div></div>
+          </div>
+        </div>
+
+        <div class="module-item">
+          <div class="sphere-icon" style="background: radial-gradient(circle at 30% 30%, #f39c12, #935116);"></div>
+          <div>
+            <div style="font-weight: 700; color: #fff;">Lake LM 26</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">FOH Main PA System</div>
+          </div>
+          <div class="meters">
+            <div class="meter-bar"><div class="meter-fill" style="height: 0%;"></div></div>
+            <div class="meter-bar"><div class="meter-fill" style="height: 0%;"></div></div>
+          </div>
+        </div>
+
+        <div class="module-item">
+          <div class="sphere-icon" style="background: radial-gradient(circle at 30% 30%, #2ecc71, #145a32);"></div>
+          <div>
+            <div style="font-weight: 700; color: #fff;">Lab.gruppen PLM 20k</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Touring Sub Arrays</div>
+          </div>
+          <div class="meters">
+            <div class="meter-bar"><div class="meter-fill" style="height: 0%;"></div></div>
+            <div class="meter-bar"><div class="meter-fill" style="height: 0%;"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin-top: 3.5rem;">
+      <h2 style="font-size: 1.75rem; margin-bottom: 1rem;">Multi-Platform Automated Releases</h2>
+      <p style="color: var(--text-muted);">Build locally using the included <code>Makefile</code> or trigger automated GitHub Releases across Windows, Linux, and macOS:</p>
+      <pre><code># Build and package for all platforms
+make package-all
+
+# Create GitHub Release with compiled binaries
+make github-release</code></pre>
+    </section>
+  </main>
+
+  <footer>
+    <p>Open Lake Controller is an independent open-source hardware preservation project.<br>Lake, Dolby Lake Processor, and Lab.gruppen are trademarks of their respective owners.</p>
+  </footer>
+
+</body>
+</html>
