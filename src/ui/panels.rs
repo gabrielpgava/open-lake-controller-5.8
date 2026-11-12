@@ -161,11 +161,12 @@ pub fn render_user_preferences(
     windowed_mode: &mut bool,
     daylight_mode: &mut bool,
     app_view: &mut AppView,
+    updater: &crate::updater::AutoUpdater,
 ) {
     ui.vertical(|ui| {
         ui.horizontal(|ui| {
             ui.label(
-                RichText::new("USER PREFERENCES & DISPLAY ENGINE")
+                RichText::new("USER PREFERENCES & SYSTEM UPDATES")
                     .font(egui::FontId::proportional(16.0))
                     .strong()
                     .color(theme.text_primary),
@@ -185,6 +186,68 @@ pub fn render_user_preferences(
             .inner_margin(egui::Margin::symmetric(18.0, 16.0))
             .show(ui, |ui| {
                 ui.vertical(|ui| {
+                    // Auto-Update Section
+                    ui.label(
+                        RichText::new("GITHUB AUTO-UPDATE & VERSION MANAGER")
+                            .font(egui::FontId::proportional(14.0))
+                            .strong()
+                            .color(theme.frame_yellow),
+                    );
+
+                    ui.horizontal(|ui| {
+                        ui.label(format!("Current Version: v{}", crate::updater::CURRENT_VERSION));
+                        ui.add_space(15.0);
+
+                        match updater.get_status() {
+                            crate::updater::UpdateStatus::Idle => {
+                                if ui.button("Check for Updates Now").clicked() {
+                                    updater.check_for_updates();
+                                }
+                            }
+                            crate::updater::UpdateStatus::Checking => {
+                                ui.spinner();
+                                ui.label(RichText::new("Checking GitHub releases...").color(theme.frame_cyan));
+                            }
+                            crate::updater::UpdateStatus::UpToDate(msg) => {
+                                ui.label(RichText::new(format!("✔ Up to date ({})", msg)).color(theme.meter_green).strong());
+                                if ui.button("Re-check").clicked() {
+                                    updater.check_for_updates();
+                                }
+                            }
+                            crate::updater::UpdateStatus::UpdateAvailable { version, download_url, release_notes } => {
+                                ui.vertical(|ui| {
+                                    ui.label(
+                                        RichText::new(format!("🚀 New Version Available: v{}", version))
+                                            .color(theme.frame_yellow)
+                                            .strong(),
+                                    );
+                                    if !release_notes.is_empty() {
+                                        ui.label(format!("Notes: {}", release_notes));
+                                    }
+                                    if ui.button(RichText::new("Download & Install Update").color(theme.meter_green).strong()).clicked() {
+                                        updater.download_and_install(download_url);
+                                    }
+                                });
+                            }
+                            crate::updater::UpdateStatus::Downloading(p) => {
+                                ui.label(format!("Downloading update: {:.0}%", p * 100.0));
+                            }
+                            crate::updater::UpdateStatus::Downloaded(msg) => {
+                                ui.label(RichText::new(msg).color(theme.meter_green));
+                            }
+                            crate::updater::UpdateStatus::Error(err) => {
+                                ui.label(RichText::new(format!("⚠ Update check notice: {}", err)).color(theme.red_clip));
+                                if ui.button("Try Again").clicked() {
+                                    updater.check_for_updates();
+                                }
+                            }
+                        }
+                    });
+
+                    ui.add_space(14.0);
+                    ui.separator();
+                    ui.add_space(12.0);
+
                     ui.label(
                         RichText::new("MODERN WINDOWED DISPLAY ENGINE")
                             .font(egui::FontId::proportional(14.0))

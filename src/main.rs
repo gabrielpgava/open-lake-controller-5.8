@@ -2,12 +2,14 @@ mod dsp;
 mod model;
 mod theme;
 mod ui;
+mod updater;
 
 use eframe::egui::{self, CentralPanel, TopBottomPanel};
 use model::{AppView, BottomMenuContext, DelayDisplayUnit, Group, Module, ModuleEditorTab, ModuleType};
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 use theme::LakeTheme;
+use updater::AutoUpdater;
 
 pub struct LakeControllerApp {
     modules: Vec<Module>,
@@ -26,6 +28,7 @@ pub struct LakeControllerApp {
     simulate_audio: bool,
     selected_adapter_idx: usize,
     network_adapters: Vec<crate::model::NetworkAdapterInfo>,
+    updater: AutoUpdater,
     start_time: Instant,
     frame_count: u32,
     screenshot_path: Option<PathBuf>,
@@ -131,7 +134,7 @@ impl LakeControllerApp {
             },
         ];
 
-        Self {
+        let app = Self {
             modules,
             groups,
             pages,
@@ -148,12 +151,18 @@ impl LakeControllerApp {
             simulate_audio: false, // Default false: meters stay at resting 0.0 when not connected
             selected_adapter_idx: 0,
             network_adapters,
+            updater: AutoUpdater::new(),
             start_time: Instant::now(),
             frame_count: 0,
             screenshot_path,
             screenshot_requested: false,
             screenshot_taken: false,
-        }
+        };
+
+        // Check for updates on startup
+        app.updater.check_for_updates();
+
+        app
     }
 
     /// Simulate audio signal activity and meter dynamics when connected or explicitly requested
@@ -357,6 +366,7 @@ impl eframe::App for LakeControllerApp {
                         &mut self.windowed_mode,
                         &mut self.daylight_mode,
                         &mut self.app_view,
+                        &self.updater,
                     );
                 }
                 AppView::NetworkConfig => {

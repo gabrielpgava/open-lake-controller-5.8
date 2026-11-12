@@ -1,7 +1,7 @@
 use crate::theme::LakeTheme;
 use eframe::egui::{self, Color32, Pos2, Rect, Rounding, Stroke, Vec2};
 
-/// Draw an authentic Lake Controller 3D glossy pill button
+/// Draw an authentic Lake Controller 3D glossy pill button with high-end tactile finish
 pub fn draw_lake_pill_button(
     painter: &egui::Painter,
     rect: Rect,
@@ -14,89 +14,134 @@ pub fn draw_lake_pill_button(
 ) {
     let r = rect.height() * 0.5;
 
-    // Base color
-    let (base_color, dark_rim, text_color) = if is_disabled {
-        (theme.btn_gray_bg, theme.btn_gray_dark, theme.btn_gray_text)
+    // Palette selection with refined high-contrast tactile tone
+    let (base_top, base_bottom, rim_stroke, text_color) = if is_disabled {
+        (
+            Color32::from_rgb(95, 105, 115),
+            Color32::from_rgb(60, 68, 76),
+            Color32::from_rgb(45, 52, 60),
+            theme.btn_gray_text,
+        )
     } else if is_active {
-        (theme.btn_amber_bg, theme.btn_amber_dark, theme.btn_amber_text)
+        (
+            Color32::from_rgb(255, 185, 45),
+            Color32::from_rgb(215, 125, 10),
+            Color32::from_rgb(145, 75, 0),
+            Color32::from_rgb(25, 12, 0),
+        )
     } else {
-        (theme.btn_cyan_bg, theme.btn_cyan_dark, theme.btn_cyan_text)
+        (
+            Color32::from_rgb(72, 192, 245),
+            Color32::from_rgb(28, 125, 195),
+            Color32::from_rgb(12, 70, 120),
+            Color32::from_rgb(0, 28, 55),
+        )
     };
 
-    let fill_color = if is_hovered && !is_disabled {
-        base_color.gamma_multiply(1.15)
+    // Responsive interaction shift (push-in feel when active/hovered)
+    let (draw_rect, fill_top, fill_bottom) = if is_disabled {
+        (rect, base_top, base_bottom)
+    } else if is_active {
+        // Inverted gradient when pushed / active
+        (rect, base_bottom, base_top)
+    } else if is_hovered {
+        (
+            Rect::from_min_max(Pos2::new(rect.min.x, rect.min.y - 0.5), Pos2::new(rect.max.x, rect.max.y - 0.5)),
+            base_top.gamma_multiply(1.18),
+            base_bottom.gamma_multiply(1.12),
+        )
     } else {
-        base_color
+        (rect, base_top, base_bottom)
     };
 
-    // 1. Dark bottom shadow / outer bevel
+    // 1. Soft ambient outer drop shadow for depth
     painter.rect_filled(
-        Rect::from_min_max(Pos2::new(rect.min.x, rect.min.y + 1.0), Pos2::new(rect.max.x, rect.max.y + 1.5)),
+        Rect::from_min_max(
+            Pos2::new(rect.min.x + 0.5, rect.min.y + 1.5),
+            Pos2::new(rect.max.x + 0.5, rect.max.y + 2.5),
+        ),
         Rounding::same(r),
-        Color32::from_black_alpha(100),
+        Color32::from_black_alpha(110),
     );
 
-    // 2. Base body fill
-    painter.rect_filled(rect, Rounding::same(r), fill_color);
-
-    // 3. 3D Gel Top Highlight (upper 45%)
-    let highlight_h = (rect.height() * 0.44).max(6.0);
-    let highlight_rect = Rect::from_min_max(
-        Pos2::new(rect.min.x + 3.0, rect.min.y + 2.0),
-        Pos2::new(rect.max.x - 3.0, rect.min.y + highlight_h),
+    // 2. Button chassis background (dark inset bezel)
+    painter.rect_filled(
+        draw_rect,
+        Rounding::same(r),
+        rim_stroke,
     );
-    let highlight_color = if is_active {
-        Color32::from_rgba_unmultiplied(255, 255, 230, 110)
-    } else if is_disabled {
-        Color32::from_rgba_unmultiplied(255, 255, 255, 60)
+
+    // 3. Inner body pill fill
+    let inner_rect = Rect::from_min_max(
+        Pos2::new(draw_rect.min.x + 1.2, draw_rect.min.y + 1.2),
+        Pos2::new(draw_rect.max.x - 1.2, draw_rect.max.y - 1.2),
+    );
+    let inner_r = (inner_rect.height() * 0.5).max(1.0);
+    painter.rect_filled(inner_rect, Rounding::same(inner_r), fill_top);
+
+    // 4. Subtle lower half gradient tint
+    let lower_half = Rect::from_min_max(
+        Pos2::new(inner_rect.min.x, inner_rect.center().y),
+        Pos2::new(inner_rect.max.x, inner_rect.max.y),
+    );
+    painter.rect_filled(lower_half, Rounding::same(inner_r), fill_bottom);
+
+    // 5. 3D Gel Top Gloss Highlight (elliptical tactile reflection)
+    if !is_disabled {
+        let highlight_h = (inner_rect.height() * 0.42).clamp(4.0, 18.0);
+        let highlight_rect = Rect::from_min_max(
+            Pos2::new(inner_rect.min.x + 2.5, inner_rect.min.y + 1.5),
+            Pos2::new(inner_rect.max.x - 2.5, inner_rect.min.y + highlight_h),
+        );
+        let gloss_color = if is_active {
+            Color32::from_rgba_unmultiplied(255, 255, 240, 95)
+        } else {
+            Color32::from_rgba_unmultiplied(255, 255, 255, 140)
+        };
+        painter.rect_filled(highlight_rect, Rounding::same(highlight_h * 0.5), gloss_color);
+    }
+
+    // 6. Precise rim stroke for hardware definition
+    let border_color = if is_hovered && !is_disabled {
+        Color32::from_white_alpha(160)
     } else {
-        Color32::from_rgba_unmultiplied(255, 255, 255, 120)
+        rim_stroke
     };
-    painter.rect_filled(highlight_rect, Rounding::same(r * 0.7), highlight_color);
+    painter.rect_stroke(draw_rect, Rounding::same(r), Stroke::new(1.3_f32, border_color));
 
-    // 4. Subtle inner bottom shadow
-    let shadow_rect = Rect::from_min_max(
-        Pos2::new(rect.min.x + 4.0, rect.max.y - 6.0),
-        Pos2::new(rect.max.x - 4.0, rect.max.y - 2.0),
-    );
-    painter.rect_filled(shadow_rect, Rounding::same(2.0), Color32::from_black_alpha(35));
-
-    // 5. Border stroke
-    painter.rect_stroke(rect, Rounding::same(r), Stroke::new(1.2_f32, dark_rim));
-
-    // 6. Label (multi-line supported)
+    // 7. Label rendering (bold, crisp and centered)
     let lines: Vec<&str> = label.split('\n').collect();
     if lines.len() == 1 {
         painter.text(
-            rect.center(),
+            draw_rect.center(),
             egui::Align2::CENTER_CENTER,
             label,
-            egui::FontId::proportional(12.0),
+            egui::FontId::proportional(12.2),
             text_color,
         );
     } else {
         let line_spacing = 13.0;
         let total_h = (lines.len() as f32 - 1.0) * line_spacing;
-        let start_y = rect.center().y - total_h * 0.5;
+        let start_y = draw_rect.center().y - total_h * 0.5;
         for (i, line) in lines.iter().enumerate() {
             painter.text(
-                Pos2::new(rect.center().x, start_y + (i as f32) * line_spacing),
+                Pos2::new(draw_rect.center().x, start_y + (i as f32) * line_spacing),
                 egui::Align2::CENTER_CENTER,
                 *line,
-                egui::FontId::proportional(11.0),
+                egui::FontId::proportional(11.2),
                 text_color,
             );
         }
     }
 
-    // 7. F-key shortcut in bottom-right corner
+    // 8. F-key tactile indicator in bottom-right corner
     if let Some(fk) = fkey {
-        let fk_color = text_color.gamma_multiply(0.7);
+        let fk_color = text_color.gamma_multiply(0.72);
         painter.text(
-            Pos2::new(rect.max.x - 7.0, rect.max.y - 4.0),
+            Pos2::new(draw_rect.max.x - 7.0, draw_rect.max.y - 3.5),
             egui::Align2::RIGHT_BOTTOM,
             fk,
-            egui::FontId::monospace(8.5),
+            egui::FontId::monospace(8.8),
             fk_color,
         );
     }
